@@ -1,0 +1,17 @@
+{% extends 'app1/layout.html' %}
+
+{% block title %}
+    Главная страница
+{% endblock %}
+
+{% block content %}
+    <h1>Главная страница</h1>
+    <p>Главная страница</p>
+
+    <div class="buttons">
+        <a href="about/">Про нас</a>
+        <a href="books/">Книги</a>
+    </div>
+
+    {% include 'app1/include.html' %}
+{% endblock %}
