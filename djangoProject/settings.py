@@ -118,3 +118,21 @@ STATIC_URL = "static/"
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# djangoProject/settings.py
+
+# # Настройки для брокера сообщений (используем Redis)
+# CELERY_BROKER_URL = 'redis://localhost:6379/0'
+#
+# # Настройки для backend (используем Redis)
+# CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
+
+CELERY_BROKER_URL = 'redis://redis:6379/0'
+CELERY_RESULT_BACKEND = 'redis://redis:6379/0'
+
+# Настройка для задания таймзоны
+CELERY_TIMEZONE = 'UTC'
+
+# Включение сохранения результатов задач
+CELERY_TASK_TRACK_STARTED = True
+CELERY_TASK_TIME_LIMIT = 30 * 60

@@ -27,3 +27,22 @@ def book_list(request):
 def book_detail(request, id):
     book = get_object_or_404(Book, id=id)
     return render(request, 'app1/book_detail.html', {'book': book})
+
+# app1/views.py
+from django.http import JsonResponse
+from .tasks import add
+from celery.result import AsyncResult
+from djangoProject.celery import app
+
+def add_numbers(request):
+    task = add.delay(4, 4)
+    return JsonResponse({'task_id': task.id})
+
+def task_status(request, task_id):
+    task_result = AsyncResult(task_id, app=app)
+    response = {
+        'task_id': task_id,
+        'state': task_result.state,
+        'result': task_result.result
+    }
+    return JsonResponse(response)
