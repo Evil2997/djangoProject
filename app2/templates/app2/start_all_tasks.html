@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<!--
+http://localhost:8001/start_all_tasks/
+-->
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Start All Tasks</title>
+</head>
+<body>
+    <h1>Start All Tasks</h1>
+    <form method="post" action="/start_all_tasks/">
+        {% csrf_token %}
+        <button type="submit">Start</button>
+    </form>
+</body>
+</html>

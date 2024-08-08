@@ -1,12 +1,12 @@
 {% extends "app1/layout.html" %}
 {% block content %}
-<div class="book-info">
-    <h2>{{ book.title }}</h2>
-    <p><strong>Автор:</strong> {{ book.author }}</p>
-    <p><strong>Год написания:</strong> {{ book.year }}</p>
-    <p>Полный текст книги...</p>
-    <div class="btn_books">
-        <a href="{% url 'book_list' %}">Назад</a>
+    <div class="book-info">
+        <h2>{{ book.title }}</h2>
+        <p><strong>Автор:</strong> {{ book.author }}</p>
+        <p><strong>Год написания:</strong> {{ book.year }}</p>
+        <p>Полный текст книги...</p>
+        <div class="btn_books">
+            <a href="{% url 'book_list' %}">Назад</a>
+        </div>
     </div>
-</div>
 {% endblock %}
