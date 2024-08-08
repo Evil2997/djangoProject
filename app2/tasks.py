@@ -7,6 +7,7 @@ from celery import shared_task
 
 @shared_task()
 def num1_speed0(x, y):
+    time.sleep(5)
     return (x + y) * (x - y)
 
 

@@ -30,15 +30,13 @@ def execute_commands_with_sudo(commands, password):
     return results
 
 
-def main(if_stopped_redis_now=False):
+def main():
     commands = [
         "systemctl stop redis",
         "service redis stop",
         "docker-compose down",
     ]
     password = "12345678"
-    if not if_stopped_redis_now:
-        commands = [commands[2]]
     results = execute_commands_with_sudo(commands, password)
 
     for result in results:
@@ -49,5 +47,4 @@ def main(if_stopped_redis_now=False):
 
 
 if __name__ == "__main__":
-    if_stopped_redis_now = False
-    main(if_stopped_redis_now)
+    main()
