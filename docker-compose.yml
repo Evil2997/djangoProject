@@ -16,13 +16,23 @@ services:
     depends_on:
       - redis
 
-  worker:
+  worker_urgent:
     build: .
-    command: ./wait_for_redis.sh celery -A djangoProject worker -l info
+    command: ./wait_for_redis.sh celery -A djangoProject worker -Q urgent_tasks -l info
     volumes:
       - .:/app
     depends_on:
       - redis
+
+  worker_background:
+    build: .
+    command: ./wait_for_redis.sh celery -A djangoProject worker -Q background_tasks -l info
+    volumes:
+      - .:/app
+    depends_on:
+      - redis
+    # Эта очередь будет ожидать завершения очереди urgent_tasks
+    restart: on-failure
 
   beat:
     build: .
