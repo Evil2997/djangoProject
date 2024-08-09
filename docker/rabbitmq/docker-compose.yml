@@ -1,0 +1,59 @@
+version: '3'
+
+services:
+  rabbitmq:
+    image: "rabbitmq:3-management"
+    ports:
+      - "5672:5672"
+      - "15673:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+
+  web:
+    build:
+      context: ../..  # Относительный путь к корню проекта
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - .:/app
+    ports:
+      - "8001:8000"
+    depends_on:
+      - rabbitmq
+
+  worker_urgent:
+    build:
+      context: ../..  # Относительный путь к корню проекта
+    command: ./wait_for_rabbitmq.sh celery -A djangoProject worker -Q high_priority -l info
+    volumes:
+      - .:/app
+    depends_on:
+      - rabbitmq
+
+  worker_background:
+    build:
+      context: ../..  # Относительный путь к корню проекта
+    command: ./wait_for_rabbitmq.sh celery -A djangoProject worker -Q medium_priority,low_priority -l info
+    volumes:
+      - .:/app
+    depends_on:
+      - rabbitmq
+    restart: on-failure
+
+  beat:
+    build:
+      context: ../..  # Относительный путь к корню проекта
+    command: ./wait_for_rabbitmq.sh celery -A djangoProject beat -l info
+    volumes:
+      - .:/app
+    depends_on:
+      - rabbitmq
+
+  flower:
+    build:
+      context: ../..  # Относительный путь к корню проекта
+    command: celery -A djangoProject flower --port=5555
+    ports:
+      - "5555:5555"
+    depends_on:
+      - rabbitmq
