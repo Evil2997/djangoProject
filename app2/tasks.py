@@ -3,12 +3,18 @@
 import time
 
 from celery import shared_task
+from celery.utils.log import get_task_logger
+
+logger = get_task_logger(__name__)
 
 
 @shared_task()
-def num1_speed0(x, y):
+def num1_speed0(self, x, y):
+    logger.info(f'Starting task {self.request.id} with priority {self.request.delivery_info.get("priority")}')
+    result = (x + y) * (x - y)
     time.sleep(5)
-    return (x + y) * (x - y)
+    logger.info(f'Task {self.request.id} completed with result {result}')
+    return result
 
 
 @shared_task()
