@@ -7,44 +7,60 @@ services:
       - "6379:6379"
 
   web:
-    build: .
+    build:
+      context: ../..  # Корень вашего проекта
     command: python manage.py runserver 0.0.0.0:8000
     volumes:
-      - .:/app
+      - ../../:/app  # Монтируем корень проекта в /app
+    environment:
+      - DJANGO_SETTINGS_MODULE=djangoProject.settings_redis
     ports:
       - "8001:8000"
     depends_on:
       - redis
 
   worker_urgent:
-    build: .
-    command: ./wait_for_redis.sh celery -A djangoProject worker -Q urgent_tasks -l info
+    build:
+      context: ../..  # Корень вашего проекта
+    command: ./docker/redis/wait_for_redis.sh celery -A djangoProject worker -Q high_priority -l info
     volumes:
-      - .:/app
+      - ../../:/app  # Монтируем корень проекта в /app
+    environment:
+      - DJANGO_SETTINGS_MODULE=djangoProject.settings_redis
     depends_on:
       - redis
 
   worker_background:
-    build: .
-    command: ./wait_for_redis.sh celery -A djangoProject worker -Q background_tasks -l info
+    build:
+      context: ../..  # Корень вашего проекта
+    command: ./docker/redis/wait_for_redis.sh celery -A djangoProject worker -Q medium_priority,low_priority -l info
     volumes:
-      - .:/app
+      - ../../:/app  # Монтируем корень проекта в /app
+    environment:
+      - DJANGO_SETTINGS_MODULE=djangoProject.settings_redis
     depends_on:
       - redis
-    # Эта очередь будет ожидать завершения очереди urgent_tasks
     restart: on-failure
 
   beat:
-    build: .
-    command: ./wait_for_redis.sh celery -A djangoProject beat -l info
+    build:
+      context: ../..  # Корень вашего проекта
+    command: ./docker/redis/wait_for_redis.sh celery -A djangoProject beat -l info
     volumes:
-      - .:/app
+      - ../../:/app  # Монтируем корень проекта в /app
+    environment:
+      - DJANGO_SETTINGS_MODULE=djangoProject.settings_redis
     depends_on:
       - redis
 
   flower:
-    build: .
+    build:
+      context: ../..  # Корень вашего проекта
     command: celery -A djangoProject flower --port=5555
+    volumes:
+      - ../../:/app  # Монтируем корень проекта в /app
+    environment:
+      - DJANGO_SETTINGS_MODULE=djangoProject.settings_redis
     ports:
       - "5555:5555"
     depends_on:

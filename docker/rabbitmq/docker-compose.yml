@@ -12,10 +12,12 @@ services:
 
   web:
     build:
-      context: ../..  # Относительный путь к корню проекта
-    command: python manage.py runserver 0.0.0.0:8000
+      context: ../..  # Корень вашего проекта
+    command: ./docker/rabbitmq/wait_for_rabbitmq.sh python manage.py runserver 0.0.0.0:8000
     volumes:
-      - .:/app
+      - ../../:/app
+    environment:
+      - DJANGO_SETTINGS_MODULE=djangoProject.settings_rabbitmq
     ports:
       - "8001:8000"
     depends_on:
@@ -23,36 +25,46 @@ services:
 
   worker_urgent:
     build:
-      context: ../..  # Относительный путь к корню проекта
-    command: ./wait_for_rabbitmq.sh celery -A djangoProject worker -Q high_priority -l info
+      context: ../..  # Корень вашего проекта
+    command: ./docker/rabbitmq/wait_for_rabbitmq.sh celery -A djangoProject worker -Q high_priority -l info
     volumes:
-      - .:/app
+      - ../../:/app
+    environment:
+      - DJANGO_SETTINGS_MODULE=djangoProject.settings_rabbitmq
     depends_on:
       - rabbitmq
 
   worker_background:
     build:
-      context: ../..  # Относительный путь к корню проекта
-    command: ./wait_for_rabbitmq.sh celery -A djangoProject worker -Q medium_priority,low_priority -l info
+      context: ../..  # Корень вашего проекта
+    command: ./docker/rabbitmq/wait_for_rabbitmq.sh celery -A djangoProject worker -Q medium_priority,low_priority -l info
     volumes:
-      - .:/app
+      - ../../:/app
+    environment:
+      - DJANGO_SETTINGS_MODULE=djangoProject.settings_rabbitmq
     depends_on:
       - rabbitmq
     restart: on-failure
 
   beat:
     build:
-      context: ../..  # Относительный путь к корню проекта
-    command: ./wait_for_rabbitmq.sh celery -A djangoProject beat -l info
+      context: ../..  # Корень вашего проекта
+    command: ./docker/rabbitmq/wait_for_rabbitmq.sh celery -A djangoProject beat -l info
     volumes:
-      - .:/app
+      - ../../:/app
+    environment:
+      - DJANGO_SETTINGS_MODULE=djangoProject.settings_rabbitmq
     depends_on:
       - rabbitmq
 
   flower:
     build:
-      context: ../..  # Относительный путь к корню проекта
+      context: ../..  # Корень вашего проекта
     command: celery -A djangoProject flower --port=5555
+    volumes:
+      - ../../:/app
+    environment:
+      - DJANGO_SETTINGS_MODULE=djangoProject.settings_rabbitmq
     ports:
       - "5555:5555"
     depends_on:
