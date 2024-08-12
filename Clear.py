@@ -1,15 +1,21 @@
+import logging
+
 import pexpect
+
+# Настройка логирования
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 
 def execute_commands_with_sudo(commands, password):
     results = []
     for command in commands:
         try:
-            # Добавляем sudo только к тем командам, которые не начинаются с python или python3
-            if command.startswith("python") or command.startswith("python3"):
-                full_command = command
-            else:
+            # Определяем, нужно ли использовать sudo
+            if not command.startswith("python") and not command.startswith("python3") and not command.startswith(
+                    "docker"):
                 full_command = f"sudo {command}"
+            else:
+                full_command = command
 
             child = pexpect.spawn(full_command)
 
@@ -28,6 +34,7 @@ def execute_commands_with_sudo(commands, password):
                 "return_code": return_code
             })
         except pexpect.exceptions.ExceptionPexpect as e:
+            logging.error(f"Не удалось выполнить команду '{full_command}': {e}")
             results.append({
                 "command": full_command,
                 "output": "",
@@ -39,23 +46,20 @@ def execute_commands_with_sudo(commands, password):
 
 def main():
     commands = [
-        "systemctl stop redis",
-        "service redis stop",
-        "docker-compose -f docker/redis/docker-compose.yml down",
-
         "systemctl stop rabbitmq-server",
         "service rabbitmq-server stop",
         "docker-compose -f docker/rabbitmq/docker-compose.yml down",
-
         "python3 Free_ports.py 15672 6379",
     ]
-    password = "12345678"
+    password = "12345678"  # Убедись, что пароль безопасен
     results = execute_commands_with_sudo(commands, password)
 
     for result in results:
-        print(f"COMMAND:\n {result['command']}")
-        print(f"OUTPUT:\n {result['output']}")
-        print(f"RETURN CODE:\n {result['return_code']}")
+        print(f"КОМАНДА:\n {result['command']}")
+        print(f"РЕЗУЛЬТАТ:\n {result['output']}")
+        print(f"КОД ВОЗВРАТА:\n {result['return_code']}")
+        if 'error' in result:
+            print(f"ОШИБКА:\n {result['error']}")
         print("=" * 44)
 
 
