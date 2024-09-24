@@ -6,9 +6,6 @@ services:
     ports:
       - "5672:5672"
       - "15673:15672"
-    environment:
-      RABBITMQ_DEFAULT_USER: guest
-      RABBITMQ_DEFAULT_PASS: guest
 
   web:
     build:
@@ -26,7 +23,7 @@ services:
   worker_urgent:
     build:
       context: ../..  # Корень вашего проекта
-    command: ./docker/rabbitmq/wait_for_rabbitmq.sh celery -A djangoProject worker -Q high_priority -l info
+    command: ./docker/rabbitmq/wait_for_rabbitmq.sh celery --app=djangoProject worker --queues=high_priority --loglevel=info
     volumes:
       - ../../:/app
     environment:
@@ -37,19 +34,18 @@ services:
   worker_background:
     build:
       context: ../..  # Корень вашего проекта
-    command: ./docker/rabbitmq/wait_for_rabbitmq.sh celery -A djangoProject worker -Q medium_priority,low_priority -l info
+    command: ./docker/rabbitmq/wait_for_rabbitmq.sh celery --app=djangoProject worker --queues=medium_priority, low_priority --loglevel=info
     volumes:
       - ../../:/app
     environment:
       - DJANGO_SETTINGS_MODULE=djangoProject.settings_rabbitmq
     depends_on:
       - rabbitmq
-    restart: on-failure
 
   beat:
     build:
       context: ../..  # Корень вашего проекта
-    command: ./docker/rabbitmq/wait_for_rabbitmq.sh celery -A djangoProject beat -l info
+    command: ./docker/rabbitmq/wait_for_rabbitmq.sh celery --app=djangoProject beat --loglevel=info
     volumes:
       - ../../:/app
     environment:
@@ -60,7 +56,7 @@ services:
   flower:
     build:
       context: ../..  # Корень вашего проекта
-    command: celery -A djangoProject flower --port=5555
+    command: ./docker/rabbitmq/wait_for_rabbitmq.sh celery --app=djangoProject flower --port=5555
     volumes:
       - ../../:/app
     environment:

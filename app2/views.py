@@ -1,46 +1,42 @@
 # app2/views.py
+import logging
+
 from celery import group
 from django.http import JsonResponse
 from django.shortcuts import render
-import logging
 
 from .tasks import num1_speed0
 
 logger = logging.getLogger(__name__)
 
-def schedule_tasks(task_list):
-    tasks = []
-    logger.info("Запуск создания задач...")
-
-    for task_data in task_list:
-        task = num1_speed0.si(*task_data['args']).set(priority=task_data['priority'], queue=task_data['queue'])
-        tasks.append(task)
-
-    task_group = group(tasks)
-    logger.info("Задачи сформированы.")
-    return task_group
-
 
 def start_all_tasks(request):
     if request.method == "POST":
-        task_list = [
-            {'queue': 'urgent_tasks', 'priority': 1, 'args': (1, 11)},
-            {'queue': 'background_tasks', 'priority': 5, 'args': (5, 55)},
-            {'queue': 'urgent_tasks', 'priority': 10, 'args': (10, 10)},
-            {'queue': 'background_tasks', 'priority': 1, 'args': (1, 11)},
-            {'queue': 'urgent_tasks', 'priority': 2, 'args': (2, 22)},
-            {'queue': 'background_tasks', 'priority': 3, 'args': (3, 4)},
-            {'queue': 'urgent_tasks', 'priority': 6, 'args': (6, 66)},
-            {'queue': 'background_tasks', 'priority': 3, 'args': (3, 33)},
-            {'queue': 'urgent_tasks', 'priority': 4, 'args': (4, 44)},
-            {'queue': 'background_tasks', 'priority': 2, 'args': (2, 22)},
-            {'queue': 'urgent_tasks', 'priority': 4, 'args': (4, 44)},
-            {'queue': 'background_tasks', 'priority': 1, 'args': (1, 11)},
-        ]
+        urgent_tasks = group([
+            num1_speed0.s(4, 4).set(priority=4),
+            num1_speed0.s(3, 3).set(priority=3),
+            num1_speed0.s(7, 7).set(priority=7),
+            num1_speed0.s(3, 3).set(priority=3),
+            num1_speed0.s(2, 2).set(priority=2),
+            num1_speed0.s(2, 2).set(priority=2),
+        ])
 
-        task_group = schedule_tasks(task_list)
-        task_group.apply_async()
+        background_tasks = group([
+            num1_speed0.s(1, 1).set(priority=1),
+            num1_speed0.s(5, 5).set(priority=5),
+            num1_speed0.s(4, 4).set(priority=4),
+            num1_speed0.s(2, 2).set(priority=2),
+            num1_speed0.s(2, 2).set(priority=2),
+            num1_speed0.s(2, 2).set(priority=2),
+        ])
 
-        return JsonResponse({'status': 'All tasks started'})
+        urgent_result = urgent_tasks.apply_async()
+        background_result = background_tasks.apply_async()
+
+        return JsonResponse({
+            'status': 'All tasks started',
+            'urgent_task_ids': [task.id for task in urgent_result.results],
+            'background_task_ids': [task.id for task in background_result.results],
+        })
 
     return render(request, 'app2/start_all_tasks.html')
