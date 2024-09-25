@@ -3,3 +3,4 @@ celery==5.4.0
 redis==3.5.3
 flower==2.0.1
 pexpect==4.9.0
+requests==2.32.3
